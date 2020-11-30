@@ -28,13 +28,16 @@ These networks expect a BGR input (compared to RGB in pytorch). However, BGR ord
 these modules can be installed with `pip`
 
 ```
-pytorch >= 1.2
-tensorboard-pytorch
-tensorboardX >= 1.4
+torch>=1.2
+torchvision
+numpy
 spatial-correlation-sampler>=0.2.1
+tensorboard
 imageio
 argparse
-path.py
+path
+tqdm
+scipy
 ```
 
 or
