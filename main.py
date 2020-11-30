@@ -61,9 +61,9 @@ parser.add_argument('--weight-decay', '--wd', default=4e-4, type=float,
                     metavar='W', help='weight decay')
 parser.add_argument('--bias-decay', default=0, type=float,
                     metavar='B', help='bias decay')
-parser.add_argument('--multiscale-weights', '-w', default=[0.005,0.01,0.02,0.08,0.32], type=float, nargs=5,
+parser.add_argument('--multiscale-weights', '-w', default=[0.005], type=float, nargs=5,
                     help='training weight for each scale, from highest resolution (flow2) to lowest (flow6)',
-                    metavar=('W2', 'W3', 'W4', 'W5', 'W6'))
+                    metavar=('W2', 'W3', 'W4', 'W5', 'W6')) #default=[0.005,0.01,0.02,0.08,0.32]
 parser.add_argument('--sparse', action='store_true',
                     help='look for NaNs in target flow when computing EPE, avoid if flow is garantied to be dense,'
                     'automatically seleted when choosing a KITTIdataset')
@@ -83,6 +83,7 @@ best_EPE = -1
 n_iter = 0
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+dummy_input = torch.randn(1, 6, 60, 60, device=device)
 
 def main():
     global args, best_EPE
@@ -211,7 +212,7 @@ def main():
             'state_dict': model.module.state_dict(),
             'best_EPE': best_EPE,
             'div_flow': args.div_flow
-        }, is_best, save_path)
+        }, is_best, save_path, model, dummy_input)
 
 
 def train(train_loader, model, optimizer, epoch, train_writer):
@@ -243,7 +244,7 @@ def train(train_loader, model, optimizer, epoch, train_writer):
             output = [F.interpolate(output[0], (h,w)), *output[1:]]
 
         loss = multiscaleEPE(output, target, weights=args.multiscale_weights, sparse=args.sparse)
-        flow2_EPE = args.div_flow * realEPE(output[0], target, sparse=args.sparse)
+        flow2_EPE = args.div_flow * realEPE(output, target, sparse=args.sparse) # output[0] if using multi-scale loss
         # record loss and EPE
         losses.update(loss.item(), target.size(0))
         train_writer.add_scalar('train_loss', loss.item(), n_iter)

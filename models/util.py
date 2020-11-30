@@ -31,7 +31,8 @@ def predict_flow(in_planes):
 
 def deconv(in_planes, out_planes):
     return nn.Sequential(
-        nn.ConvTranspose2d(in_planes, out_planes, kernel_size=4, stride=2, padding=1, bias=False),
+        nn.UpsamplingBilinear2d(scale_factor=2),
+        nn.Conv2d(in_planes, out_planes, kernel_size=4, stride=1, padding=2, bias=False),
         nn.LeakyReLU(0.1,inplace=True)
     )
 

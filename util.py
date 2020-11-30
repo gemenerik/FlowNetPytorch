@@ -4,10 +4,12 @@ import shutil
 import torch
 
 
-def save_checkpoint(state, is_best, save_path, filename='checkpoint.pth.tar'):
+def save_checkpoint(state, is_best, save_path, model, dummy_input, filename='checkpoint.pth.tar'):
     torch.save(state, os.path.join(save_path,filename))
     if is_best:
         shutil.copyfile(os.path.join(save_path,filename), os.path.join(save_path,'model_best.pth.tar'))
+        print('hi')
+        torch.onnx.export(model.module, dummy_input, os.path.join(save_path,"tinyflownet.onnx"), export_params=True, operator_export_type=torch.onnx.OperatorExportTypes.ONNX_ATEN_FALLBACK)
 
 
 class AverageMeter(object):
