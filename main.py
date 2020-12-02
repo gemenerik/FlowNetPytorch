@@ -82,8 +82,10 @@ parser.add_argument('--milestones', default=[100,150,200], metavar='N', nargs='*
 best_EPE = -1
 n_iter = 0
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+# device = torch.device("cpu")
 
-dummy_input = torch.randn(1, 6, 60, 60, device=device)
+dummy_input = torch.randn(1, 6, 60, 60, device=device)#, device=torch.device("cpu"))
+# dummy_input = torch.randn(384, 512)
 
 def main():
     global args, best_EPE
@@ -192,6 +194,15 @@ def main():
         scheduler.step()
 
         # train for one epoch
+
+        # # --- quant
+        # model.train()
+        # model.qconfig = torch.quantization.get_default_qat_qconfig('qnnpack')  # torch.quantization.default_qconfig
+        # # model = torch.quantization.fuse_modules(model, [['Conv2d', 'bn', 'relu']])
+        # torch.backends.quantized.engine = 'qnnpack'
+        # model = torch.quantization.prepare_qat(model)
+        # # --- quant
+
         train_loss, train_EPE = train(train_loader, model, optimizer, epoch, train_writer)
         train_writer.add_scalar('mean EPE', train_EPE, epoch)
 

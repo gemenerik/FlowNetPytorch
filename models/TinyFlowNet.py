@@ -14,6 +14,7 @@ class TinyFlowNet(nn.Module):
     def __init__(self,batchNorm=True):
         super(TinyFlowNet,self).__init__()
 
+        self.quant = torch.quantization.QuantStub()
         self.batchNorm = batchNorm
         self.conv1   = conv(self.batchNorm, 6,  12, kernel_size=7, stride=2)
         self.conv2   = conv(self.batchNorm, 12, 24, kernel_size=5, stride=2)
@@ -41,6 +42,7 @@ class TinyFlowNet(nn.Module):
         # self.upsampled_flow5_to_4 = nn.ConvTranspose2d(2, 2, 4, 2, 1, bias=False)
         # self.upsampled_flow4_to_3 = nn.ConvTranspose2d(2, 2, 4, 2, 1, bias=False)
         # self.upsampled_flow3_to_2 = nn.ConvTranspose2d(2, 2, 4, 2, 1, bias=False)
+        self.dequant = torch.quantization.DeQuantStub()
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d) or isinstance(m, nn.ConvTranspose2d):
@@ -52,7 +54,7 @@ class TinyFlowNet(nn.Module):
                 constant_(m.bias, 0)
 
     def forward(self, x):
-        out_conv2 = self.conv2(self.conv1(x))
+        out_conv2 = self.conv2(self.conv1(self.quant(x)))
         # out_conv3 = self.conv3_1(self.conv3(out_conv2))
         # out_conv4 = self.conv4_1(self.conv4(out_conv3))
         # out_conv5 = self.conv5_1(self.conv5(out_conv4))
@@ -78,7 +80,7 @@ class TinyFlowNet(nn.Module):
         # out_deconv2 = crop_like(self.deconv2(concat3), out_conv2)
 
         # concat2 = torch.cat((out_conv2,out_deconv2,flow3_up),1)
-        flow2 = self.predict_flow2(out_conv2)  # self.predict_flow2(concat2)
+        flow2 = self.dequant(self.predict_flow2(out_conv2))  # self.predict_flow2(concat2)
 
         # flow4, flow5, flow6 = flow2, flow2, flow2
 

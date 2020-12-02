@@ -8,8 +8,14 @@ def save_checkpoint(state, is_best, save_path, model, dummy_input, filename='che
     torch.save(state, os.path.join(save_path,filename))
     if is_best:
         shutil.copyfile(os.path.join(save_path,filename), os.path.join(save_path,'model_best.pth.tar'))
-        print('hi')
-        torch.onnx.export(model.module, dummy_input, os.path.join(save_path,"tinyflownet.onnx"), export_params=True, operator_export_type=torch.onnx.OperatorExportTypes.ONNX_ATEN_FALLBACK)
+        # model_quantized = torch.quantization.convert(model.cpu())
+        # model.cuda()
+        input_names = ['input_0']
+        output_names = ['output_0']
+        torch.onnx.export(model.module, dummy_input, os.path.join(save_path,"tinyflownet.onnx"), verbose=False,
+                          input_names=input_names, output_names=output_names, export_params=True, keep_initializers_as_inputs=True)#, export_params=True, operator_export_type=torch.onnx.OperatorExportTypes.ONNX_ATEN_FALLBACK)
+        # torch.onnx.export(model_quantized.module, dummy_input, os.path.join(save_path, "tinyflownet_q.onnx"), verbose=False,
+        #                   input_names=input_names, output_names=output_names)
 
 
 class AverageMeter(object):
