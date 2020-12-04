@@ -1,28 +1,10 @@
-# FlowNetPytorch
-Pytorch implementation of FlowNet by Dosovitskiy et al.
-
-This repository is a torch implementation of [FlowNet](http://lmb.informatik.uni-freiburg.de/Publications/2015/DFIB15/), by [Alexey Dosovitskiy](http://lmb.informatik.uni-freiburg.de/people/dosovits/) et al. in PyTorch. See Torch implementation [here](https://github.com/ClementPinard/FlowNetTorch)
+# TinyFlowNetPytorch
+forked from [ClementPinard/FlowNetPytorch](https://github.com/ClementPinard/FlowNetPytorch)
 
 This code is mainly inspired from official [imagenet example](https://github.com/pytorch/examples/tree/master/imagenet).
 It has not been tested for multiple GPU, but it should work just as in original code.
 
 The code provides a training example, using [the flying chair dataset](http://lmb.informatik.uni-freiburg.de/resources/datasets/FlyingChairs.en.html) , with data augmentation. An implementation for [Scene Flow Datasets](http://lmb.informatik.uni-freiburg.de/resources/datasets/SceneFlowDatasets.en.html) may be added in the future.
-
-Two neural network models are currently provided, along with their batch norm variation (experimental) :
-
- - **FlowNetS**
- - **FlowNetSBN**
- - **FlowNetC**
- - **FlowNetCBN**
-
-## Pretrained Models
-Thanks to [Kaixhin](https://github.com/Kaixhin) you can download a pretrained version of FlowNetS (from caffe, not from pytorch) [here](https://drive.google.com/open?id=0B5EC7HMbyk3CbjFPb0RuODI3NmM). This folder also contains trained networks from scratch.
-
-### Note on networks loading
-Directly feed the downloaded Network to the script, you don't need to uncompress it even if your desktop environment tells you so.
-
-### Note on networks from caffe
-These networks expect a BGR input (compared to RGB in pytorch). However, BGR order is not very important.
 
 ## Prerequisite
 these modules can be installed with `pip`
@@ -71,36 +53,8 @@ python main.py -h
 ```bash
 tensorboard --logdir=/path/to/checkoints
 ```
-	
-## Training results
-
- Models can be downloaded [here](https://drive.google.com/open?id=0B5EC7HMbyk3CbjFPb0RuODI3NmM) in the pytorch folder.
- 
- Models were trained with default options unless specified. Color warping was not used.
-
-| Arch        | learning rate | batch size | epoch size | filename                     | validation EPE |
-| ----------- | ------------- | ---------- | ---------- | ---------------------------- | -------------- |
-| FlowNetS    | 1e-4          | 8          | 2700       | flownets_EPE1.951.pth.tar    | 1.951          |
-| FlowNetS BN | 1e-3          | 32         | 695        | flownets_bn_EPE2.459.pth.tar | 2.459          |
-| FlowNetC    | 1e-4          | 8          | 2700       | flownetc_EPE1.766.pth.tar    | 1.766          |
-
-*Note* : FlowNetS BN took longer to train and got worse results. It is strongly advised not to you use it for Flying Chairs dataset.
-
-## Validation samples
-
-Prediction are made by FlowNetS.
-
-Exact code for Optical Flow -> Color map can be found [here](main.py#L321)
-
-| Input | prediction | GroundTruth |
-|-------|------------|-------------|
-| <img src='images/input_1.gif' width=256> | <img src='images/pred_1.png' width=256> | <img src='images/GT_1.png' width=256> |
-| <img src='images/input_2.gif' width=256> | <img src='images/pred_2.png' width=256> | <img src='images/GT_2.png' width=256> |
-| <img src='images/input_3.gif' width=256> | <img src='images/pred_3.png' width=256> | <img src='images/GT_3.png' width=256> |
 
 ## Running inference on a set of image pairs
-
-If you need to run the network on your images, you can download a pretrained network [here](https://drive.google.com/open?id=0B5EC7HMbyk3CbjFPb0RuODI3NmM) and launch the inference script on your folder of image pairs.
 
 Your folder needs to have all the images pairs in the same location, with the name pattern
 ```
