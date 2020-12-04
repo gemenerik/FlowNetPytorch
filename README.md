@@ -47,6 +47,8 @@ For further help you can type
 python main.py -h
 ```
 
+Both the latest epoch and best epoch networks are saved. The best epoch network is also converted to `.onnx`.
+
 ## Visualizing training
 [Tensorboard-pytorch](https://github.com/lanpa/tensorboard-pytorch) is used for logging. To visualize result, simply type
 
