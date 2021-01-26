@@ -13,7 +13,7 @@ def save_checkpoint(state, is_best, save_path, model, dummy_input, filename='che
         input_names = ['input_0']
         output_names = ['output_0']
         torch.onnx.export(model.module, dummy_input, os.path.join(save_path,"tinyflownet.onnx"), verbose=False,
-                          input_names=input_names, output_names=output_names, export_params=True, keep_initializers_as_inputs=True)#, export_params=True, operator_export_type=torch.onnx.OperatorExportTypes.ONNX_ATEN_FALLBACK)
+                          input_names=input_names, output_names=output_names, export_params=True, keep_initializers_as_inputs=True, opset_version=11)#, export_params=True, operator_export_type=torch.onnx.OperatorExportTypes.ONNX_ATEN_FALLBACK)
         # torch.onnx.export(model_quantized.module, dummy_input, os.path.join(save_path, "tinyflownet_q.onnx"), verbose=False,
         #                   input_names=input_names, output_names=output_names)
 
