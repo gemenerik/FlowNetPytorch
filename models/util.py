@@ -27,14 +27,26 @@ def conv(batchNorm, in_planes, out_planes, kernel_size=3, stride=1):
         )
 
 
+def depthwise_separable_conv(batchNorm, in_planes, out_planes, kernel_size=3, stride=1):
+    if batchNorm:
+        raise('Error')
+    else:
+        return nn.Sequential(
+            nn.Conv2d(in_planes, in_planes, kernel_size=kernel_size, stride=stride, padding=(kernel_size-1)//2, bias=True, groups=in_planes),  # depth-wise
+            nn.ReLU(inplace=True),
+            nn.Conv2d(in_planes, out_planes, kernel_size=1, stride=1, padding=(kernel_size-1)//2, bias=True)
+        )
+
+
 def predict_flow(in_planes):
     return nn.Conv2d(in_planes,2,kernel_size=3,stride=1,padding=1,bias=False)
 
 
 def deconv(in_planes, out_planes):
     return nn.Sequential(
-        nn.UpsamplingBilinear2d(scale_factor=2),
-        nn.Conv2d(in_planes, out_planes, kernel_size=4, stride=1, padding=2, bias=False),
+        nn.Upsample(scale_factor=2, mode='bilinear'),
+        # nn.UpsamplingBilinear2d(scale_factor=2),
+        nn.Conv2d(in_planes, out_planes, kernel_size=3, stride=1, padding=1, bias=False),
         nn.ReLU(inplace=True)
         # nn.LeakyReLU(0.1, inplace=True)
     )
