@@ -84,7 +84,7 @@ n_iter = 0
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # device = torch.device("cpu")
 
-dummy_input = torch.randn(1, 6, 60, 60, device=device)#, device=torch.device("cpu"))
+dummy_input = torch.randn(1, 6, 160, 160, device=device)#, device=torch.device("cpu"))
 # dummy_input = torch.randn(384, 512)
 
 def main():
@@ -247,7 +247,7 @@ def train(train_loader, model, optimizer, epoch, train_writer):
         input = torch.cat(input,1).to(device)
 
         # compute output
-        output = model(input)
+        output = model(input)#[0], input[1])
         if args.sparse:
             # Since Target pooling is not very precise when sparse,
             # take the highest resolution prediction and upsample it instead of downsampling target
@@ -296,7 +296,7 @@ def validate(val_loader, model, epoch, output_writers):
         input = torch.cat(input,1).to(device)
 
         # compute output
-        output = model(input)
+        output = model(input)#[0], input[1])
         flow2_EPE = args.div_flow*realEPE(output, target, sparse=args.sparse)
         # record EPE
         flow2_EPEs.update(flow2_EPE.item(), target.size(0))
@@ -307,6 +307,7 @@ def validate(val_loader, model, epoch, output_writers):
 
         if i < len(output_writers):  # log first output of first batches
             if epoch == 0:
+                #input = torch.cat(input, 1).to(device)
                 mean_values = torch.tensor([0.45,0.432,0.411], dtype=input.dtype).view(3,1,1)
                 output_writers[i].add_image('GroundTruth', flow2rgb(args.div_flow * target[0], max_value=10), 0)
                 output_writers[i].add_image('Inputs', (input[0,:3].cpu() + mean_values).clamp(0,1), 0)
