@@ -84,7 +84,7 @@ n_iter = 0
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # device = torch.device("cpu")
 
-dummy_input = torch.randn(1, 6, 160, 160, device=device)#, device=torch.device("cpu"))
+dummy_input = torch.randn(1, 6, 324, 244, device=device)#, device=torch.device("cpu"))
 # dummy_input = torch.randn(384, 512)
 
 def main():
