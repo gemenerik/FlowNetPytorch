@@ -4,6 +4,7 @@ import shutil
 import torch
 
 
+
 def save_checkpoint(state, is_best, save_path, model, dummy_input, filename='checkpoint.pth.tar'):
     torch.save(state, os.path.join(save_path,filename))
     if is_best:
@@ -42,6 +43,7 @@ class AverageMeter(object):
 
 def flow2rgb(flow_map, max_value):
     flow_map_np = flow_map.detach().cpu().numpy()
+    print(np.shape(flow_map_np))
     _, h, w = flow_map_np.shape
     flow_map_np[:,(flow_map_np[0] == 0) & (flow_map_np[1] == 0)] = float('nan')
     rgb_map = np.ones((3,h,w)).astype(np.float32)

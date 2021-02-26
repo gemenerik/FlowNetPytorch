@@ -16,6 +16,9 @@ from multiscaleloss import multiscaleEPE, realEPE
 import datetime
 from torch.utils.tensorboard import SummaryWriter
 from util import flow2rgb, AverageMeter, save_checkpoint
+from torchvision.utils import make_grid
+import matplotlib.pyplot as plt
+import itertools
 
 model_names = sorted(name for name in models.__dict__
                      if name.islower() and not name.startswith("__"))
@@ -75,16 +78,18 @@ parser.add_argument('--pretrained', dest='pretrained', default=None,
                     help='path to pre-trained model')
 parser.add_argument('--no-date', action='store_true',
                     help='don\'t append date timestamp to folder' )
-parser.add_argument('--div-flow', default=20,
+parser.add_argument('--div-flow', default=1,#default is 20
                     help='value by which flow will be divided. Original value is 20 but 1 with batchNorm gives good results')
 parser.add_argument('--milestones', default=[100,150,200], metavar='N', nargs='*', help='epochs at which learning rate is divided by 2')
+parser.add_argument('--multi_input', action='store_true',
+                    help='select multi-input mode' )
 
 best_EPE = -1
 n_iter = 0
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # device = torch.device("cpu")
 
-dummy_input = torch.randn(1, 6, 324, 244, device=device)#, device=torch.device("cpu"))
+dummy_input = torch.randn(1, 6, 61, 81, device=device)#, device=torch.device("cpu"))
 # dummy_input = torch.randn(384, 512)
 
 def main():
@@ -126,7 +131,7 @@ def main():
         args.sparse = True
     if args.sparse:
         co_transform = flow_transforms.Compose([
-            flow_transforms.RandomCrop((320,448)),
+            flow_transforms.RandomCrop((324,244)),
             flow_transforms.RandomVerticalFlip(),
             flow_transforms.RandomHorizontalFlip()
         ])
@@ -134,7 +139,7 @@ def main():
         co_transform = flow_transforms.Compose([
             flow_transforms.RandomTranslate(10),
             flow_transforms.RandomRotate(10,5),
-            flow_transforms.RandomCrop((320,448)),
+            flow_transforms.RandomCrop((324,244)),
             flow_transforms.RandomVerticalFlip(),
             flow_transforms.RandomHorizontalFlip()
         ])
@@ -203,6 +208,11 @@ def main():
         # model = torch.quantization.prepare_qat(model)
         # # --- quant
 
+        # my_sample = next(itertools.islice(train_loader, 10, None))
+        # print(my_sample[1][0])
+        # print("Maximum value is ", torch.max(my_sample[0][0]))
+        # print("Minimum value is ", torch.min(my_sample[0][0]))
+
         train_loss, train_EPE = train(train_loader, model, optimizer, epoch, train_writer)
         train_writer.add_scalar('mean EPE', train_EPE, epoch)
 
@@ -217,6 +227,14 @@ def main():
 
         is_best = EPE < best_EPE
         best_EPE = min(EPE, best_EPE)
+        # if is_best:
+        #     kernels = model.module.conv3_1[0].weight.data
+        #     kernels = kernels.cpu()
+        #     kernels = kernels - kernels.min()
+        #     kernels = kernels / kernels.max()
+        #     img = make_grid(kernels)
+        #     plt.imshow(img.permute(1, 2, 0))
+        #     plt.show()
         save_checkpoint({
             'epoch': epoch + 1,
             'arch': args.arch,
