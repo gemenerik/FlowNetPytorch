@@ -131,7 +131,7 @@ def main():
         args.sparse = True
     if args.sparse:
         co_transform = flow_transforms.Compose([
-            flow_transforms.RandomCrop((324,244)),
+            flow_transforms.RandomCrop((320,448)),
             flow_transforms.RandomVerticalFlip(),
             flow_transforms.RandomHorizontalFlip()
         ])
@@ -139,7 +139,7 @@ def main():
         co_transform = flow_transforms.Compose([
             flow_transforms.RandomTranslate(10),
             flow_transforms.RandomRotate(10,5),
-            flow_transforms.RandomCrop((324,244)),
+            flow_transforms.RandomCrop((320,448)),
             flow_transforms.RandomVerticalFlip(),
             flow_transforms.RandomHorizontalFlip()
         ])
