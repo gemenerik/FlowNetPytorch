@@ -107,7 +107,7 @@ def main():
             filename = save_path/'{}{}'.format(img1_file.stem[:-1], suffix)
             if args.output_value in['vis', 'both']:
                 rgb_flow = flow2rgb(args.div_flow * flow_output, max_value=args.max_flow)
-                to_save = (rgb_flow * 255).astype(np.uint8).transpose(1,2,0)
+                to_save = (rgb_flow * 255).astype(np.uint8)
                 imwrite(filename + '.png', to_save)
             if args.output_value in ['raw', 'both']:
                 # Make the flow map a HxWx2 array as in .flo files
