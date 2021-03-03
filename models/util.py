@@ -37,6 +37,16 @@ def depthwise_separable_conv(batchNorm, in_planes, out_planes, kernel_size=3, st
             nn.ReLU(inplace=True)
         )
 
+def dds_conv(batchNorm, in_planes, out_planes, kernel_size=3, stride=1, dilation=2):
+    if batchNorm:
+        raise('Error')
+    else:
+        return nn.Sequential(
+            nn.Conv2d(in_planes, in_planes, kernel_size=kernel_size, stride=stride, dilation=dilation, padding=(kernel_size-1)//2+round(dilation-1), bias=True, groups=in_planes),  # depth-wise
+            nn.Conv2d(in_planes, out_planes, kernel_size=1, stride=1, padding=0, bias=True),
+            nn.ReLU(inplace=True)
+        )
+
 
 def predict_flow(in_planes):
     return nn.Conv2d(in_planes,2,kernel_size=3,stride=1,padding=1,bias=False)

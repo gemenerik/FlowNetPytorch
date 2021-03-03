@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 from torch.nn.init import kaiming_normal_, constant_
-from .util import conv, predict_flow, deconv, crop_like, depthwise_separable_conv
+from .util import conv, predict_flow, deconv, crop_like, depthwise_separable_conv, dds_conv
 
 
 __all__ = [
@@ -20,16 +20,16 @@ class TinyFlowNet(nn.Module):
         self.conv1   = depthwise_separable_conv(self.batchNorm, 6,  24, kernel_size=3, stride=2)
         self.conv2   = depthwise_separable_conv(self.batchNorm, 24, 48, kernel_size=3, stride=1)
         self.conv3   = depthwise_separable_conv(self.batchNorm, 48, 96, kernel_size=3, stride=1)
-        self.conv3_1 = depthwise_separable_conv(self.batchNorm, 96, 96)
-        # self.conv4   = depthwise_separable_conv(self.batchNorm, 96, 192, stride=2)
-        # self.conv4_1 = depthwise_separable_conv(self.batchNorm, 192, 192)
-        # self.conv5   = depthwise_separable_conv(self.batchNorm, 192, 192, stride=2)
-        # self.conv5_1 = depthwise_separable_conv(self.batchNorm, 192, 192)
+        self.conv3_1 = dds_conv(self.batchNorm, 96, 96)
+        self.conv4   = depthwise_separable_conv(self.batchNorm, 96, 192, stride=1)
+        self.conv4_1 = dds_conv(self.batchNorm, 192, 192, dilation=4)
+        self.conv5   = depthwise_separable_conv(self.batchNorm, 192, 192, stride=1)
+        self.conv5_1 = dds_conv(self.batchNorm, 192, 192)
         # self.conv6   = depthwise_separable_conv(self.batchNorm, 192, 384, stride=2)
         # self.conv6_1 = depthwise_separable_conv(self.batchNorm, 384, 384)
 
-        self.conv4 = depthwise_separable_conv(self.batchNorm, 96, 192, stride=1)
-        self.conv4_1 = depthwise_separable_conv(self.batchNorm, 192, 192)
+        # self.conv4 = depthwise_separable_conv(self.batchNorm, 96, 192, stride=1)
+        # self.conv4_1 = depthwise_separable_conv(self.batchNorm, 192, 192)
         # self.conv5 = depthwise_separable_conv(self.batchNorm, 192, 192, stride=1)
         # self.conv5_1 = depthwise_separable_conv(self.batchNorm, 192, 192)
 
@@ -60,9 +60,15 @@ class TinyFlowNet(nn.Module):
                 constant_(m.bias, 0)
 
     def forward(self, x):
-        # out_conv2 = self.conv2(self.conv1(self.quant(x)))
-        # out_conv3 = self.conv3_1(self.conv3(out_conv2))
-        # out_conv4 = self.conv4_1(self.conv4(out_conv3))
+        out_conv2 = self.conv2(self.conv1(self.quant(x)))
+        # print("Out_conv2 size is ", out_conv2.size())
+        out_conv3 = self.conv3_1(self.conv3(out_conv2))
+        # print("Out_conv3 size is ", out_conv3.size())
+        out_conv4 = self.conv4_1(self.conv4(out_conv3))
+        # print("Out_conv4 size is ", out_conv4.size())
+        out_conv5 = self.conv5_1(self.conv5(out_conv4))
+        # print("Out_conv5 size ", out_conv5.size())
+
         # out_conv5 = self.conv5_1(self.conv5(out_conv4))
         # # out_conv6 = self.conv6_1(self.conv6(out_conv5))
         #
@@ -76,15 +82,16 @@ class TinyFlowNet(nn.Module):
         # out_deconv4 = crop_like(self.deconv4(out_conv5), out_conv4)
         #
         # concat4 = torch.add(out_conv4,out_deconv4)
-        # out_deconv3 = crop_like(self.deconv3(concat4), out_conv3)
+        # out_deconv3 = self.deconv3(out_conv3)
+        # print("Out_deconv3 size is ", out_deconv3.size())
         #
         # concat3 = torch.add(out_conv3,out_deconv3)
         # out_deconv2 = crop_like(self.deconv2(concat3), out_conv2)
 
         # out_deconv2 = self.conv3_1(self.conv3(self.conv2(self.conv1(self.quant(x)))))
-        out_deconv2 = (self.conv4_1(self.conv4(self.conv3_1(self.conv3(self.conv2(self.conv1(self.quant(x))))))))
 
-        flow2 = self.dequant(self.predict_flow2(out_deconv2)) # self.predict_flow2(concat2)
+        flow2 = self.dequant(self.predict_flow2(out_conv5)) # self.predict_flow2(concat2)
+        # print("flow2 size is ", flow2.size())
 
         # flow4, flow5, flow6 = flow2, flow2, flow2
 
