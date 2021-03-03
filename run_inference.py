@@ -87,7 +87,6 @@ def main():
         args.div_flow = network_data['div_flow']
 
     for (img1_file, img2_file) in tqdm(img_pairs):
-
         img1 = input_transform(imread(img1_file))
         img2 = input_transform(imread(img2_file))
         input_var = torch.cat([img1, img2]).unsqueeze(0)
